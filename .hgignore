@@ -1,0 +1,7 @@
+syntax:glob
+build
+dist
+*.pyc
+*~
+MANIFEST
+constructive_geometries.egg-info

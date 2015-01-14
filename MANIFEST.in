@@ -1,0 +1,4 @@
+include README.rst
+include *.txt
+include constructive_geometries/*.py
+include constructive_geometries/data/*.*
