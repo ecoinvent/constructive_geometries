@@ -45,6 +45,23 @@ class ConstructiveGeometries(object):
         else:
             return geom
 
+    def construct_difference(self, parent, excluded, name=None, fp=None):
+        """Construct geometry from ``parent`` without the regions in ``excluded`` and optionally write to filepath ``fp``.
+
+        ``excluded`` must be an iterable of location strings (not face ids)."""
+        assert parent in self.locations, u"Can't find location {}".format(parent)
+        for location in excluded:
+            assert location in self.locations, u"Can't find location {}".format(location)
+        included = set(self.data[parent]).difference(
+            reduce(set.union, [set(self.data[loc]) for loc in excluded])
+        )
+        geom = self._union(included)
+        if fp:
+            self._write_geom_to_file(fp, geom, name)
+            return fp
+        else:
+            return geom
+
     def _write_geom_to_file(self, fp, geom, name=None):
         """Write unioned geom ``geom`` to filepath ``fp``"""
         meta = {
@@ -53,7 +70,7 @@ class ConstructiveGeometries(object):
             'schema': {'geometry': 'MultiPolygon', 'properties': {'name': 'str', 'id': 'int'}}
         }
         with fiona.drivers():
-            with fiona.open(fp, 'w', **meta) as sink:
+            with fiona.open(fp + '.gpkg', 'w', **meta) as sink:
                 sink.write({
                     'geometry': self._to_fiona(geom),
                     'properties': {'name': name or u"Merged geometry", 'id': 1}
