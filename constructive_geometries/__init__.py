@@ -1,8 +1,9 @@
-import fiona
-import json
-import os
 from shapely.geometry import shape, mapping
 from shapely.ops import cascaded_union
+import fiona
+import itertools
+import json
+import os
 
 __version__ = (0, 1)
 
@@ -40,7 +41,7 @@ class ConstructiveGeometries(object):
         )
         geom = self._union(included)
         if fp:
-            self._write_geom_to_file(fp, geom, name)
+            self.write_geoms_to_file(fp, [geom], [name] if name else None)
             return fp
         else:
             return geom
@@ -57,13 +58,17 @@ class ConstructiveGeometries(object):
         )
         geom = self._union(included)
         if fp:
-            self._write_geom_to_file(fp, geom, name)
+            self.write_geoms_to_file(fp, [geom], [name] if name else None)
             return fp
         else:
             return geom
 
-    def _write_geom_to_file(self, fp, geom, name=None):
-        """Write unioned geom ``geom`` to filepath ``fp``"""
+    def write_geoms_to_file(self, fp, geoms, names=None):
+        """Write unioned geometries ``geoms`` to filepath ``fp``. Optionally use ``names`` in name field."""
+        if names is not None:
+            assert len(geoms) == len(names), u"Inconsistent length of geometries and names"
+        else:
+            names = (u"Merged geometry {}".format(count) for count in itertools.count())
         meta = {
             'crs': {'no_defs': True, 'ellps': 'WGS84', 'datum': 'WGS84', 'proj': 'longlat'},
             'driver': u'GPKG',
@@ -71,10 +76,11 @@ class ConstructiveGeometries(object):
         }
         with fiona.drivers():
             with fiona.open(fp + '.gpkg', 'w', **meta) as sink:
-                sink.write({
-                    'geometry': self._to_fiona(geom),
-                    'properties': {'name': name or u"Merged geometry", 'id': 1}
-                })
+                for geom, name, count in itertools.izip(geoms, itertools.count(1)):
+                    sink.write({
+                        'geometry': self._to_fiona(geom),
+                        'properties': {'name': name, 'id': count}
+                    })
 
     def _to_shapely(self, data):
         return shape(data['geometry'])
