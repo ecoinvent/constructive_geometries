@@ -65,6 +65,7 @@ class ConstructiveGeometries(object):
 
     def write_geoms_to_file(self, fp, geoms, names=None):
         """Write unioned geometries ``geoms`` to filepath ``fp``. Optionally use ``names`` in name field."""
+        fp = fp + '.gpkg'
         if names is not None:
             assert len(geoms) == len(names), u"Inconsistent length of geometries and names"
         else:
@@ -75,12 +76,13 @@ class ConstructiveGeometries(object):
             'schema': {'geometry': 'MultiPolygon', 'properties': {'name': 'str', 'id': 'int'}}
         }
         with fiona.drivers():
-            with fiona.open(fp + '.gpkg', 'w', **meta) as sink:
-                for geom, name, count in itertools.izip(geoms, itertools.count(1)):
+            with fiona.open(fp, 'w', **meta) as sink:
+                for geom, name, count in itertools.izip(geoms, names, itertools.count(1)):
                     sink.write({
                         'geometry': self._to_fiona(geom),
                         'properties': {'name': name, 'id': count}
                     })
+        return fp
 
     def _to_shapely(self, data):
         return shape(data['geometry'])
