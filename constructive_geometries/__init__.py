@@ -46,6 +46,26 @@ class ConstructiveGeometries(object):
         else:
             return geom
 
+    def construct_rest_of_worlds(self, excluded, fp=None):
+        """Construct many rest-of-world geometries and optionally write to filepath ``fp``.
+
+        ``excluded`` must be a **dictionary** of {"rest-of-world label": ["names", "of", "excluded", "locations"]}``."""
+        geoms = {}
+        for key, locations in excluded.items():
+            print "Working on location:", key
+            for location in locations:
+                assert location in self.locations, u"Can't find location {}".format(location)
+            included = self.all_faces.difference(
+                reduce(set.union, [set(self.data[loc]) for loc in locations])
+            )
+            geoms[key] = self._union(included)
+        if fp:
+            labels = sorted(geoms.keys())
+            self.write_geoms_to_file(fp, [geoms[key] for key in labels], labels)
+            return fp
+        else:
+            return geoms
+
     def construct_difference(self, parent, excluded, name=None, fp=None):
         """Construct geometry from ``parent`` without the regions in ``excluded`` and optionally write to filepath ``fp``.
 
@@ -65,7 +85,8 @@ class ConstructiveGeometries(object):
 
     def write_geoms_to_file(self, fp, geoms, names=None):
         """Write unioned geometries ``geoms`` to filepath ``fp``. Optionally use ``names`` in name field."""
-        fp = fp + '.gpkg'
+        if fp[-5:] != '.gpkg':
+            fp = fp + '.gpkg'
         if names is not None:
             assert len(geoms) == len(names), u"Inconsistent length of geometries and names"
         else:
