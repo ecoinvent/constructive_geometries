@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import print_function
+
 from shapely.geometry import shape, mapping
 from shapely.ops import cascaded_union
 import fiona
@@ -52,7 +55,7 @@ class ConstructiveGeometries(object):
         ``excluded`` must be a **dictionary** of {"rest-of-world label": ["names", "of", "excluded", "locations"]}``."""
         geoms = {}
         for key, locations in excluded.items():
-            print "Working on location:", key
+            print("Working on location:", key)
             for location in locations:
                 assert location in self.locations, u"Can't find location {}".format(location)
             included = self.all_faces.difference(
@@ -85,28 +88,28 @@ class ConstructiveGeometries(object):
 
     def write_geoms_to_file(self, fp, geoms, names=None):
         """Write unioned geometries ``geoms`` to filepath ``fp``. Optionally use ``names`` in name field."""
-        if fp[-5:] != '.gpkg':
-            fp = fp + '.gpkg'
+        if fp[-5:] != u'.gpkg':
+            fp = fp + u'.gpkg'
         if names is not None:
             assert len(geoms) == len(names), u"Inconsistent length of geometries and names"
         else:
             names = (u"Merged geometry {}".format(count) for count in itertools.count())
         meta = {
-            'crs': {'no_defs': True, 'ellps': 'WGS84', 'datum': 'WGS84', 'proj': 'longlat'},
-            'driver': u'GPKG',
-            'schema': {'geometry': 'MultiPolygon', 'properties': {'name': 'str', 'id': 'int'}}
+            u'crs': {u'no_defs': True, u'ellps': u'WGS84', u'datum': u'WGS84', u'proj': u'longlat'},
+            u'driver': u'GPKG',
+            u'schema': {u'geometry': u'MultiPolygon', u'properties': {u'name': u'str', u'id': u'int'}}
         }
         with fiona.drivers():
-            with fiona.open(fp, 'w', **meta) as sink:
+            with fiona.open(fp, u'w', **meta) as sink:
                 for geom, name, count in itertools.izip(geoms, names, itertools.count(1)):
                     sink.write({
-                        'geometry': self._to_fiona(geom),
-                        'properties': {'name': name, 'id': count}
+                        u'geometry': self._to_fiona(geom),
+                        u'properties': {u'name': name, u'id': count}
                     })
         return fp
 
     def _to_shapely(self, data):
-        return shape(data['geometry'])
+        return shape(data[u'geometry'])
 
     def _to_fiona(self, data):
         return mapping(data)
