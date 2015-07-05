@@ -40,7 +40,7 @@ class ConstructiveGeometries(object):
         for location in excluded:
             assert location in self.locations, u"Can't find location {}".format(location)
         included = self.all_faces.difference(
-            reduce(set.union, [set(self.data[loc]) for loc in excluded])
+            set().union(*[set(self.data[loc]) for loc in excluded])
         )
         if not geom:
             return included
@@ -61,7 +61,7 @@ class ConstructiveGeometries(object):
             for location in locations:
                 assert location in self.locations, u"Can't find location {}".format(location)
             included = self.all_faces.difference(
-                reduce(set.union, [set(self.data[loc]) for loc in locations])
+                set().union(*[set(self.data[loc]) for loc in locations])
             )
             geoms[key] = self._union(included)
         if fp:
