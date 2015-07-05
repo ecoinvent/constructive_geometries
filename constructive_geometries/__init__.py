@@ -33,7 +33,7 @@ class ConstructiveGeometries(object):
         self.all_faces = set(self.data.pop(u"__all__"))
         self.locations = set(self.data.keys())
 
-    def construct_rest_of_world(self, excluded, name=None, fp=None):
+    def construct_rest_of_world(self, excluded, name=None, fp=None, geom=True):
         """Construct rest-of-world geometry and optionally write to filepath ``fp``.
 
         Excludes faces in location list ``excluded``. ``excluded`` must be an iterable of location strings (not face ids)."""
@@ -42,6 +42,8 @@ class ConstructiveGeometries(object):
         included = self.all_faces.difference(
             reduce(set.union, [set(self.data[loc]) for loc in excluded])
         )
+        if not geom:
+            return included
         geom = self._union(included)
         if fp:
             self.write_geoms_to_file(fp, [geom], [name] if name else None)
