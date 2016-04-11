@@ -8,7 +8,7 @@ import itertools
 import json
 import os
 
-__version__ = (0, 1)
+__version__ = (0, 2)
 
 DATA_FILEPATH = os.path.join(os.path.dirname(__file__), u"data")
 
