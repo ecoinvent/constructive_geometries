@@ -4,13 +4,25 @@ from __future__ import print_function
 from shapely.geometry import shape, mapping
 from shapely.ops import cascaded_union
 import fiona
+import hashlib
 import itertools
 import json
 import os
 
-__version__ = (0, 2)
+__version__ = (0, 3)
 
 DATA_FILEPATH = os.path.join(os.path.dirname(__file__), u"data")
+
+
+def sha256(filepath, blocksize=65536):
+    """Generate SHA 256 hash for file at `filepath`"""
+    hasher = hashlib.sha256()
+    fo = open(filepath, 'rb')
+    buf = fo.read(blocksize)
+    while len(buf) > 0:
+        hasher.update(buf)
+        buf = fo.read(blocksize)
+    return hasher.hexdigest()
 
 
 class ConstructiveGeometries(object):
@@ -27,9 +39,12 @@ class ConstructiveGeometries(object):
             with fiona.open(self.faces_fp) as src:
                 assert src.meta
 
+        gpkg_hash = json.load(open(self.data_fp))['metadata']['sha256']
+        assert gpkg_hash == sha256(self.faces_fp)
+
     def load_definitions(self):
         """Load mapping of country names to face ids"""
-        self.data = dict(json.load(open(self.data_fp)))
+        self.data = dict(json.load(open(self.data_fp))['data'])
         self.all_faces = set(self.data.pop(u"__all__"))
         self.locations = set(self.data.keys())
 
