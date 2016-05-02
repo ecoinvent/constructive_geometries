@@ -3,7 +3,7 @@ import os
 
 setup(
     name='constructive_geometries',
-    version="0.3.1",
+    version="0.4",
     packages=["constructive_geometries"],
     package_data={'constructive_geometries': [
         "data/faces.gpkg",

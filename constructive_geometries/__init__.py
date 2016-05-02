@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
+from multiprocessing import Pool, cpu_count
 from shapely.geometry import shape, mapping
 from shapely.ops import cascaded_union
 import fiona
@@ -9,7 +10,7 @@ import itertools
 import json
 import os
 
-__version__ = (0, 3, 1)
+__version__ = (0, 4)
 
 DATA_FILEPATH = os.path.join(os.path.dirname(__file__), u"data")
 
@@ -23,6 +24,25 @@ def sha256(filepath, blocksize=65536):
         hasher.update(buf)
         buf = fo.read(blocksize)
     return hasher.hexdigest()
+
+
+def _to_shapely(data):
+    return shape(data[u'geometry'])
+
+
+def _to_fiona(data):
+    return mapping(data)
+
+
+def _union(args):
+    label, fp, face_ids = args
+    shapes = []
+    with fiona.drivers():
+        with fiona.open(fp) as src:
+            for feat in src:
+                if int(feat[u'properties'][u'id']) in face_ids:
+                    shapes.append(_to_shapely(feat))
+    return label, cascaded_union(shapes)
 
 
 class ConstructiveGeometries(object):
@@ -59,28 +79,35 @@ class ConstructiveGeometries(object):
         )
         if not geom:
             return included
-        geom = self._union(included)
+        geom = _union(included)[1]
         if fp:
             self.write_geoms_to_file(fp, [geom], [name] if name else None)
             return fp
         else:
             return geom
 
-    def construct_rest_of_worlds(self, excluded, fp=None):
+    def construct_rest_of_worlds(self, excluded, fp=None, use_mp=True, simplify=True):
         """Construct many rest-of-world geometries and optionally write to filepath ``fp``.
 
         ``excluded`` must be a **dictionary** of {"rest-of-world label": ["names", "of", "excluded", "locations"]}``."""
         geoms = {}
-        sorted_keys =
+        raw_data = []
         for key in sorted(excluded):
-            print("Working on location:", key)
             locations = excluded[key]
             for location in locations:
                 assert location in self.locations, u"Can't find location {}".format(location)
             included = self.all_faces.difference(
                 {face for loc in locations for face in self.data[loc]}
             )
-            geoms[key] = self._union(included)
+            raw_data.append((key, self.faces_fp, included))
+        if use_mp:
+            with Pool(cpu_count() - 1) as pool:
+                results = pool.map(_union, raw_data)
+            geoms = dict(results)
+        else:
+            geoms = dict([_union(row) for row in raw_data])
+        if simplify:
+            geoms = {k: v.simplify(0.05) for k, v in geoms.items()}
         if fp:
             labels = sorted(geoms)
             self.write_geoms_to_file(fp, [geoms[key] for key in labels], labels)
@@ -110,9 +137,9 @@ class ConstructiveGeometries(object):
 
         """
         metadata = {
-            'filename': 'faces.gpkg',
-            'field': 'id',
-            'sha256': sha256(self.faces_fp)
+            u'filename': u'faces.gpkg',
+            u'field': u'id',
+            u'sha256': sha256(self.faces_fp)
         }
         data = []
         for key, locations in excluded.items():
@@ -122,7 +149,7 @@ class ConstructiveGeometries(object):
                 {face for loc in locations for face in self.data[loc]}
             )
             data.append((key, sorted(included)))
-        obj = {'data': data, 'metadata': metadata}
+        obj = {u'data': data, u'metadata': metadata}
         if fp:
             with open(fp, "w") as f:
                 json.dump(obj, f, indent=2)
@@ -139,7 +166,7 @@ class ConstructiveGeometries(object):
         included = set(self.data[parent]).difference(
             reduce(set.union, [set(self.data[loc]) for loc in excluded])
         )
-        geom = self._union(included)
+        geom = _union(included)
         if fp:
             self.write_geoms_to_file(fp, [geom], [name] if name else None)
             return fp
@@ -161,24 +188,9 @@ class ConstructiveGeometries(object):
         }
         with fiona.drivers():
             with fiona.open(fp, u'w', **meta) as sink:
-                for geom, name, count in itertools.izip(geoms, names, itertools.count(1)):
+                for geom, name, count in zip(geoms, names, itertools.count(1)):
                     sink.write({
-                        u'geometry': self._to_fiona(geom),
+                        u'geometry': _to_fiona(geom),
                         u'properties': {u'name': name, u'id': count}
                     })
         return fp
-
-    def _to_shapely(self, data):
-        return shape(data[u'geometry'])
-
-    def _to_fiona(self, data):
-        return mapping(data)
-
-    def _union(self, face_ids):
-        shapes = []
-        with fiona.drivers():
-            with fiona.open(self.faces_fp) as src:
-                for feat in src:
-                    if int(feat[u'properties'][u'id']) in face_ids:
-                        shapes.append(self._to_shapely(feat))
-        return cascaded_union(shapes)
