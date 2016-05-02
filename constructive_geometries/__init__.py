@@ -82,7 +82,7 @@ class ConstructiveGeometries(object):
             )
             geoms[key] = self._union(included)
         if fp:
-            labels = sorted(geoms.keys())
+            labels = sorted(geoms)
             self.write_geoms_to_file(fp, [geoms[key] for key in labels], labels)
             return fp
         else:
