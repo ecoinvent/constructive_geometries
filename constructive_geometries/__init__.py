@@ -76,7 +76,7 @@ class ConstructiveGeometries(object):
             for location in locations:
                 assert location in self.locations, u"Can't find location {}".format(location)
             included = self.all_faces.difference(
-                set().union(*[set(self.data[loc]) for loc in locations])
+                {face for loc in locations for face in self.data[loc]}
             )
             geoms[key] = self._union(included)
         if fp:
@@ -85,6 +85,47 @@ class ConstructiveGeometries(object):
             return fp
         else:
             return geoms
+
+    def construct_rest_of_worlds_mapping(self, excluded, fp=None):
+        """Construct topo mapping file for ``excluded``.
+
+        ``excluded`` must be a **dictionary** of {"rest-of-world label": ["names", "of", "excluded", "locations"]}``.
+
+        Topo mapping has the data format:
+
+        .. code-block:: python
+
+            {
+                'data': [
+                    ['location label', ['topo face integer ids']],
+                ],
+                'metadata': {
+                    'filename': 'name of face definitions file',
+                    'field': 'field with uniquely identifies the fields in ``filename``',
+                    'sha256': 'SHA 256 hash of ``filename``'
+                }
+            }
+
+        """
+        metadata = {
+            'filename': 'faces.gpkg',
+            'field': 'id',
+            'sha256': sha256(self.faces_fp)
+        }
+        data = []
+        for key, locations in excluded.items():
+            for location in locations:
+                assert location in self.locations, u"Can't find location {}".format(location)
+            included = self.all_faces.difference(
+                {face for loc in locations for face in self.data[loc]}
+            )
+            data.append((key, sorted(included)))
+        obj = {'data': data, 'metadata': metadata}
+        if fp:
+            with open(fp, "w") as f:
+                json.dump(obj, f, indent=2)
+        else:
+            return obj
 
     def construct_difference(self, parent, excluded, name=None, fp=None):
         """Construct geometry from ``parent`` without the regions in ``excluded`` and optionally write to filepath ``fp``.
