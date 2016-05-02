@@ -71,8 +71,10 @@ class ConstructiveGeometries(object):
 
         ``excluded`` must be a **dictionary** of {"rest-of-world label": ["names", "of", "excluded", "locations"]}``."""
         geoms = {}
-        for key, locations in excluded.items():
+        sorted_keys =
+        for key in sorted(excluded):
             print("Working on location:", key)
+            locations = excluded[key]
             for location in locations:
                 assert location in self.locations, u"Can't find location {}".format(location)
             included = self.all_faces.difference(
