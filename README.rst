@@ -5,4 +5,4 @@ Simple tools to define world locations from a set of topological faces and set a
 
 Builds on top of `constructive geometries <https://bitbucket.org/cmutel/constructive-geometries>`__.
 
-Requires Python, `shapely <https://github.com/Toblerity/Shapely>`__, and `fiona <https://github.com/Toblerity/Fiona>`__.
+No requirements for basic use, but needs `shapely <https://github.com/Toblerity/Shapely>`__, and `fiona <https://github.com/Toblerity/Fiona>`__ for any GIS functions.

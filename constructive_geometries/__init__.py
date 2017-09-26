@@ -1,16 +1,32 @@
-# -*- coding: utf-8 -*-
-from __future__ import print_function
-
 from multiprocessing import Pool, cpu_count
-from shapely.geometry import shape, mapping
-from shapely.ops import cascaded_union
-import fiona
+from warnings import warn
 import hashlib
 import itertools
 import json
 import os
+import wrapt
 
-__version__ = (0, 4, 1)
+try:
+    from shapely.geometry import shape, mapping
+    from shapely.ops import cascaded_union
+    import fiona
+    gis = True
+except ImportError:
+    gis = False
+
+__version__ = (0, 5)
+
+MISSING_GIS = """Function not available: GIS libraries (fiona and shapely) not installed"""
+
+
+@wrapt.decorator
+def has_gis(wrapped, instance, args, kwargs):
+    """Skip function execution if there are no presamples"""
+    if gis:
+        return wrapped(*args, **kwargs)
+    else:
+        warn(MISSING_GIS)
+
 
 DATA_FILEPATH = os.path.join(os.path.dirname(__file__), u"data")
 
@@ -26,14 +42,17 @@ def sha256(filepath, blocksize=65536):
     return hasher.hexdigest()
 
 
+@has_gis
 def _to_shapely(data):
     return shape(data[u'geometry'])
 
 
+@has_gis
 def _to_fiona(data):
     return mapping(data)
 
 
+@has_gis
 def _union(args):
     label, fp, face_ids = args
     shapes = []
@@ -55,9 +74,10 @@ class ConstructiveGeometries(object):
     def check_data(self):
         """Check that definitions file is present, and that faces file is readable."""
         assert os.path.exists(self.data_fp)
-        with fiona.drivers():
-            with fiona.open(self.faces_fp) as src:
-                assert src.meta
+        if gis:
+            with fiona.drivers():
+                with fiona.open(self.faces_fp) as src:
+                    assert src.meta
 
         gpkg_hash = json.load(open(self.data_fp))['metadata']['sha256']
         assert gpkg_hash == sha256(self.faces_fp)
@@ -77,8 +97,13 @@ class ConstructiveGeometries(object):
         included = self.all_faces.difference(
             set().union(*[set(self.data[loc]) for loc in excluded])
         )
+
         if not geom:
             return included
+        elif not gis:
+            warn(MISSING_GIS)
+            return
+
         geom = _union(included)[1]
         if fp:
             self.write_geoms_to_file(fp, [geom], [name] if name else None)
@@ -86,6 +111,7 @@ class ConstructiveGeometries(object):
         else:
             return geom
 
+    @has_gis
     def construct_rest_of_worlds(self, excluded, fp=None, use_mp=True, simplify=True):
         """Construct many rest-of-world geometries and optionally write to filepath ``fp``.
 
@@ -156,6 +182,7 @@ class ConstructiveGeometries(object):
         else:
             return obj
 
+    @has_gis
     def construct_difference(self, parent, excluded, name=None, fp=None):
         """Construct geometry from ``parent`` without the regions in ``excluded`` and optionally write to filepath ``fp``.
 
@@ -173,6 +200,7 @@ class ConstructiveGeometries(object):
         else:
             return geom
 
+    @has_gis
     def write_geoms_to_file(self, fp, geoms, names=None):
         """Write unioned geometries ``geoms`` to filepath ``fp``. Optionally use ``names`` in name field."""
         if fp[-5:] != u'.gpkg':

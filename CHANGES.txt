@@ -1,6 +1,12 @@
 Changelog
 *********
 
+0.5 (2017-09-26)
+================
+
+- Updates for ecoinvent 3.4 (see http://geography.ecoinvent.org/report/#version-2-2-ecoinvent-3-4)
+- Remove all GIS requirements
+
 0.4 (2016-05-02)
 ================
 
