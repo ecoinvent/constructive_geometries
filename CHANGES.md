@@ -1,6 +1,12 @@
 # Changelog
 
 
+## 0.6 (2017-XX-XX)
+
+- Add Geomatcher class and resolve_row
+- Move to Github
+- Add example usage notebook
+
 ## 0.5 (2017-09-26)
 
 - Updates for ecoinvent 3.4 (see http://geography.ecoinvent.org/report/#version-2-2-ecoinvent-3-4)
