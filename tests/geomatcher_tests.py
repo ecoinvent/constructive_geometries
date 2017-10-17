@@ -18,6 +18,21 @@ def test_default_setup():
     with pytest.raises(KeyError):
         geomatcher["Nope"]
 
+def test_magic_methods():
+    g = Geomatcher()
+    assert len(g) > 400
+    for _ in g:
+        pass
+
+    assert 'NO' in g
+    assert g['NO']
+
+    del g['NO']
+    del g['Russia (Europe)']
+
+    g['foo'] = {1, 2, 3}
+    assert 'foo' in g
+
 def test_provide_topology():
     given = {
         'A': {1, 2, 3},
@@ -200,9 +215,6 @@ def test_finish_filter_row_exclusive_row_key():
     assert g._finish_filter([('NO', 4), ('LT', 3), ('LV', 2), ('EE', 1), ('RoW', 0)], 'RoW', False, True, False) == []
     assert g._finish_filter([('NO', 4), ('LT', 3), ('LV', 2), ('EE', 1), ('RoW', 0)], 'RoW', True, True, False) == ['RoW']
 
-def test_finish_filter_row_exclusive():
-    pass
-
 def test_intersects():
     g = Geomatcher()
     expected = [
@@ -304,26 +316,29 @@ def test_within():
     assert g.within("RU", only=only) == expected
 
 def test_intersects_row():
-    #FIXME
-    return
     g = Geomatcher()
     assert g.intersects("RoW") == []
     assert g.intersects("RoW", include_self=True) == []
-    assert g.intersects("RoW", include_self=True, only=["RoW"]) == ["RoW"]
-    assert g.intersects(('ecoinvent', 'NORDEL'), only=["NO", "RoW"]) == ["RoW", "NO"]
+    assert g.intersects("RoW", include_self=True, only=['NO', 'LT', "RoW"]) == ["RoW"]
+    assert g.intersects(('ecoinvent', 'NORDEL'), only=["NO", "RoW"]) == ["NO"]
     assert g.intersects("NO", only=["NO", "RoW"], include_self=True, exclusive=True) == ["NO"]
-    assert g.intersects("NO", only=["NO", "RoW"], include_self=True, exclusive=False) == ["RoW", "NO"]
+    assert g.intersects("NO", only=["NO", "RoW"], include_self=True, exclusive=False) == ["NO"]
     assert g.intersects(('ecoinvent', 'BALTSO'), include_self=False, exclusive=True, only=['RoW', 'EE', 'LT', 'LV']) == ['EE', 'LT', 'LV']
+    assert g.intersects(('ecoinvent', 'BALTSO'), include_self=False, exclusive=True, only=['RoW', 'LT', 'LV']) == ['LT', 'LV']
 
 def test_contained_row():
-    #FIXME
-    return
     g = Geomatcher()
     assert g.contained("RoW") == []
     assert g.contained("RoW", include_self=True, only=["RoW"]) == ["RoW"]
+    assert 'RoW' not in g.contained("GLO", only=['NO', 'RoW'])
+    assert 'RoW' not in g.contained("GLO")
+    assert 'RoW' not in g.contained(("ecoinvent", "RAS"), only=['NO', 'LT', 'RoW'])
 
 def test_within_row():
-    pass
+    g = Geomatcher()
+    assert g.within("RoW") == ['GLO']
+    del g['GLO']
+    assert g.within("RoW") == []
 
 def test_row_contextmanager_add_remove_row():
     g_orig = Geomatcher()
@@ -351,8 +366,15 @@ def test_row_contextmanager_intersects():
     with resolved_row(['NO', 'LT', 'EE'], g_orig) as g:
         assert 'RoW' in g.intersects(('ecoinvent', 'BALTSO'))
 
-def test_row_contextmanager_contains():
-    pass
+def test_row_contextmanager_contained():
+    g_orig = Geomatcher()
+    with resolved_row(['NO', 'LT', 'EE'], g_orig) as g:
+        assert 'RoW' not in g.contained(('ecoinvent', 'BALTSO'))
+        assert 'LT' in g.contained(('ecoinvent', 'BALTSO'))
+        assert 'RoW' in g.contained('GLO')
 
 def test_row_contextmanager_within():
-    pass
+    g_orig = Geomatcher()
+    with resolved_row(['NO', 'LT', 'EE'], g_orig) as g:
+        assert g.within('RoW') == ['GLO', 'RoW']
+        assert g.within('RoW', biggest_first=False) == ['RoW', 'GLO']

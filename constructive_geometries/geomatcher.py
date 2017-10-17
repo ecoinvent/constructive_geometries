@@ -76,7 +76,7 @@ class Geomatcher(MutableMapping):
         self.topology[key] = value
 
     def __delitem__(self, key):
-        del self.topology[key]
+        del self.topology[self._actual_key(key)]
 
     def __len__(self):
         return len(self.topology)
@@ -125,11 +125,6 @@ class Geomatcher(MutableMapping):
                     remaining.append(current)
             lst = remaining
 
-            # Remove RoW when there are no topo faces for it to occupy
-            if ('RoW' not in self and 'RoW' in lst
-                and not self[key].difference(removed)):
-                lst.pop(lst.index('RoW'))
-
         # If RoW not resolved, make it the smallest
         if 'RoW' not in self and 'RoW' in lst:
             lst[-1 if biggest_first else 0] = lst.pop(lst.index('RoW'))
@@ -141,13 +136,13 @@ class Geomatcher(MutableMapping):
 
         Note that sorting is done by first by number of faces intersecting ``key``; the total number of faces in the intersected region is only used to break sorting ties.
 
-        If the ``resolved_row`` context manager is not used, ``RoW`` doesn't have a spatial definition. Therefore, ``.intersects("RoW")`` returns a list with with ``RoW`` or nothing.
+        If the ``resolved_row`` context manager is not used, ``RoW`` doesn't have a spatial definition, and therefore nothing intersects it. ``.intersects("RoW")`` returns a list with with ``RoW`` or nothing.
 
         """
+        possibles = self.topology if only is None else {k: self[k] for k in only}
+
         if key == 'RoW' and 'RoW' not in self:
             return ['RoW'] if 'RoW' in possibles else []
-
-        possibles = self.topology if only is None else {k: self[k] for k in only}
 
         faces = self[key]
         lst = [
@@ -175,7 +170,7 @@ class Geomatcher(MutableMapping):
         lst = [
             (k, len(v))
             for k, v in possibles.items()
-            if faces.issuperset(v)
+            if v and faces.issuperset(v)
         ]
         return self._finish_filter(lst, key, include_self, exclusive, biggest_first)
 
@@ -185,12 +180,11 @@ class Geomatcher(MutableMapping):
         If the ``resolved_row`` context manager is not used, ``RoW`` doesn't have a spatial definition. Therefore, ``RoW`` can only be contained by ``GLO`` and ``RoW``.
 
         """
-        _ = lambda key: [key] if key in (only or []) else []
+        possibles = self.topology if only is None else {k: self[k] for k in only}
+        _ = lambda key: [key] if key in possibles else []
         if 'RoW' not in self and key == 'RoW':
             answer = [] + _('RoW') + _('GLO')
             return list(reversed(answer)) if biggest_first else answer
-
-        possibles = self.topology if only is None else {k: self[k] for k in only}
 
         faces = self[key]
         lst = [
