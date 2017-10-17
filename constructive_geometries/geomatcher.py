@@ -86,9 +86,7 @@ class Geomatcher(MutableMapping):
 
     def _actual_key(self, key):
         """Translate provided key into the key used in the topology. Tries the unmodified key, the key with the default namespace, and the country converter. Raises a ``KeyError`` if none of these finds a suitable definition in ``self.topology``."""
-        if key == "RoW":
-            return key
-        elif key in self:
+        if key in self or key in ("RoW", "GLO"):
             return key
         elif (self.default_namespace, key) in self:
             return (self.default_namespace, key)
