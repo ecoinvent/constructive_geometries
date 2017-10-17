@@ -13,7 +13,7 @@ setup(
     author_email="cmutel@gmail.com",
     license=open('LICENSE', encoding='utf-8').read(),
     install_requires=["wrapt",],
-    url="https://bitbucket.org/cmutel/py-constructive-geometries",
+    url="https://github.com/cmutel/constructive_geometries",
     long_description=open('README.md', encoding='utf-8').read(),
     description='Simple tools to define world locations from a set of topological faces and set algebra',
     classifiers=[
