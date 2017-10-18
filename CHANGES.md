@@ -1,7 +1,7 @@
 # Changelog
 
 
-## 0.6 (2017-XX-XX)
+## 0.6 (2017-10-18)
 
 - Add Geomatcher class and resolve_row
 - Move to Github
