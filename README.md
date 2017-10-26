@@ -4,7 +4,7 @@
 
 Simple tools to define world locations from a set of topological faces and set algebra. For example, one could define a "rest of the world" which started from all countries, but excluded every country who name started with the letter "a".
 
-See the [usage example](https://github.com/cmutel/constructive_geometries/blob/master/examples/Geomatching.ipynb).
+[Documentation](http://constructive-geometries.readthedocs.io/?badge=latest) and [usage example](https://github.com/cmutel/constructive_geometries/blob/master/examples/Geomatching.ipynb).
 
 Builds on top of [constructive geometries](https://github.com/cmutel/constructive_geometries).
 
