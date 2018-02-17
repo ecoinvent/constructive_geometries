@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.1.1 (2018-02-17)
+
+Packaging fixes
+
 ## 0.6.1 (2017-10-18)
 
 Packaging fixes
