@@ -32,7 +32,7 @@ class Geomatcher(MutableMapping):
 
         * ``topology``: A dictionary of ``{str: set}`` labels to faces ids. Default is ``ecoinvent``, which loads the world and ecoinvent definitions from ``constructive_geometries``.
         * ``default_namespace``: String defining the default search namespace. Default is ``'ecoinvent'``.
-        * ``use_coco``: Boolean, default ``True``. Use the `country_converter <>`__ library to fuzzy match country identifiers, e.g. "Austria" instead of "AT".
+        * ``use_coco``: Boolean, default ``True``. Use the `country_converter <https://github.com/konstantinstadler/country_converter>`__ library to fuzzy match country identifiers, e.g. "Austria" instead of "AT".
 
     """
     __seen = set()

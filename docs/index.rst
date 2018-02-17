@@ -9,6 +9,17 @@ No requirements for basic use, but needs `shapely <https://github.com/Toblerity/
 
 .. note:: See the `usage example <https://github.com/cmutel/constructive_geometries/blob/master/examples/Geomatching.ipynb>`__
 
+Installation
+------------
+
+Because of the GIS library dependencies, it is easiest to install using `conda <>`__. Installation into a new environment is recommended (doesn't need to be called ``cg``):
+
+.. code-block:: bash
+
+    conda create -n cg python=3.6
+    source activate cg
+    conda install -c conda-forge -c cmutel -c konstantinstadler country_converter constructive_geometries
+
 `ConstructiveGeometries` class
 ------------------------------
 
