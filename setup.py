@@ -3,7 +3,7 @@ import os
 
 setup(
     name='constructive_geometries',
-    version="0.6.1.1",
+    version="0.6.1.3",
     packages=["constructive_geometries"],
     package_data={'constructive_geometries': [
         "data/faces.gpkg",
@@ -17,7 +17,7 @@ setup(
         "wrapt",
     ],
     url="https://github.com/cmutel/constructive_geometries",
-    long_description=open('README.md', encoding='utf-8').read(),
+    long_description=open('README.rst', encoding='utf-8').read(),
     description='Simple tools to define world locations from a set of topological faces and set algebra',
     classifiers=[
         'Intended Audience :: Developers',

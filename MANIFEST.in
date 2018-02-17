@@ -1,5 +1,6 @@
 include LICENSE
 include *.md
+include README.rst
 include requirements.txt
 include constructive_geometries/*.py
 include constructive_geometries/data/*.*
