@@ -8,4 +8,4 @@ Simple tools to define world locations from a set of topological faces and set a
 
 Builds on top of [constructive geometries](https://github.com/cmutel/constructive_geometries).
 
-No requirements for basic use, but needs [shapely](https://github.com/Toblerity/Shapely), and [fiona](https://github.com/Toblerity/Fiona) for any GIS functions.
+Basic installation needs [wrapt](http://wrapt.readthedocs.io/en/latest/) and [country_converter](https://github.com/konstantinstadler/country_converter); GIS functions need [shapely](https://github.com/Toblerity/Shapely), and [fiona](https://github.com/Toblerity/Fiona).
