@@ -15,7 +15,7 @@ def distinguish_RoWs(database, modify_db_in_place=True):
     The "RoW definition" dict identifies the geographies that are to be **excluded** from the RoW
     The "RoW definition" dict has the structure {'ROW_1': ['geo1', 'geo2', ..., ], 'ROW_1': ['geo3', 'geo4', ..., ]}
 
-    The "activities to new RoW" dict identifies which activities have which new dict.
+    The "activities to new RoW" dict identifies which activities have which new RoW.
     The "activities to new RoW" dict structure is {act0: 'ROW_0', act1: 'ROW_1', ...}
 
     With modify_db_in_place=True, replace all instances of unspecified "ROW" in
