@@ -3,6 +3,42 @@ from collections.abc import MutableMapping
 from contextlib import contextmanager
 from functools import reduce
 import country_converter as coco
+import sys
+try:
+    from bw2data import *
+except:
+    pass
+
+def distinguish_RoWs(database, modify_db_in_place=True):
+    """ Return RoW definition dict and activities to new Row dict
+
+    The RoW definition dict identifies the geographies that are to be **excluded** from the RoW
+    The RoW definition dict has the structure {'ROW_1': ['geo1', 'geo2', ..., ], 'ROW_1': ['geo3', 'geo4', ..., ]}
+
+    The activities to RoW dict identifies which activities have which new dict.
+    The activities to RoW dict structure is {act0: 'ROW_0', act1: 'ROW_1', ...}
+
+    With modify_db_in_place=True, replace all instances of unspecified "ROW" in
+    database with specific ROW from RoW_dict.
+    """
+    assert 'bw2data.database' in sys.modules.keys(), "Must import bw2data.database to execute this"
+    assert database in databases, "Database {} not registered".format(database)
+
+    loaded_db = Database(database).load()
+    acts_with_RoWs = [act for act, data in loaded_db.items() if data['location']=='ROW']
+    RoW_dict = {}
+    RoW_act_mapping = {}
+    for i, act in enumerate(acts_with_RoWs):
+        RoW_dict['ROW_' + str(i)] = [data['location'] for data in loaded_db.values()
+                                     if data['name'] == loaded_db[act]['name']
+                                     and data['location'] != 'ROW'
+                                     ]
+        RoW_act_mapping[act] = 'ROW_' + str(i)
+    if modify_db_in_place:
+        for act, new_row in RoW_act_mapping.items():
+            loaded_db[act]['location']=new_row
+        Database(database).write(loaded_db)
+    return RoW_dict, RoW_act_mapping
 
 
 class Geomatcher(MutableMapping):
