@@ -10,16 +10,16 @@ except:
     pass
 
 def distinguish_RoWs(database, modify_db_in_place=True):
-    """ Return RoW definition dict and activities to new Row dict
+    """ Return "RoW definition" dict and "activities to new RoW" dict
 
-    The RoW definition dict identifies the geographies that are to be **excluded** from the RoW
-    The RoW definition dict has the structure {'ROW_1': ['geo1', 'geo2', ..., ], 'ROW_1': ['geo3', 'geo4', ..., ]}
+    The "RoW definition" dict identifies the geographies that are to be **excluded** from the RoW
+    The "RoW definition" dict has the structure {'ROW_1': ['geo1', 'geo2', ..., ], 'ROW_1': ['geo3', 'geo4', ..., ]}
 
-    The activities to RoW dict identifies which activities have which new dict.
-    The activities to RoW dict structure is {act0: 'ROW_0', act1: 'ROW_1', ...}
+    The "activities to new RoW" dict identifies which activities have which new dict.
+    The "activities to new RoW" dict structure is {act0: 'ROW_0', act1: 'ROW_1', ...}
 
     With modify_db_in_place=True, replace all instances of unspecified "ROW" in
-    database with specific ROW from RoW_dict.
+    database with specific ROW from "RoW definition" dict.
     """
     assert 'bw2data.database' in sys.modules.keys(), "Must import bw2data.database to execute this"
     assert database in databases, "Database {} not registered".format(database)
