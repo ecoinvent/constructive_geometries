@@ -286,7 +286,7 @@ def test_within():
         ('ecoinvent', 'UN-EUROPE'),
         ('ecoinvent', 'FSU'),
         ('ecoinvent', 'UN-EEUROPE'),
-        ('ecoinvent', 'IAI Area, Europe outside EU & EFTA'),
+        ('ecoinvent', 'IAI Area, Russia & RER w/o EU27 & EFTA'),
         'RU',
     ]
     assert g.within("RU") == expected
@@ -295,7 +295,7 @@ def test_within():
     assert g.within("RU", exclusive=True) == ['GLO']
     expected = [
         'RU',
-        ('ecoinvent', 'IAI Area, Europe outside EU & EFTA'),
+        ('ecoinvent', 'IAI Area, Russia & RER w/o EU27 & EFTA'),
         ('ecoinvent', 'UN-EEUROPE'),
         ('ecoinvent', 'FSU'),
         ('ecoinvent', 'UN-EUROPE'),
