@@ -1,4 +1,4 @@
-__version__ = (0, 6, 3)
+__version__ = (0, 6, 3, 1)
 
 
 from .cg import ConstructiveGeometries
