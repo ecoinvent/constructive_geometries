@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.4 (2018-05-31)
+
+Add Washington D.C. to ReliabilityFirst Corporation
+
 ### 0.6.3.1 (2018-05-29)
 
 Fix problem with updated base data
