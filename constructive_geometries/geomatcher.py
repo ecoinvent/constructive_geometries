@@ -35,22 +35,25 @@ class Geomatcher(MutableMapping):
         * ``use_coco``: Boolean, default ``True``. Use the `country_converter <https://github.com/konstantinstadler/country_converter>`__ library to fuzzy match country identifiers, e.g. "Austria" instead of "AT".
 
     """
+
     __seen = set()
 
-    def __init__(self, topology='ecoinvent', default_namespace=None, use_coco=True):
+    def __init__(self, topology="ecoinvent", default_namespace=None, use_coco=True):
         self.coco = use_coco
-        if topology == 'ecoinvent':
-            self.default_namespace = 'ecoinvent'
+        if topology == "ecoinvent":
+            self.default_namespace = "ecoinvent"
+
             def ns(x):
-                if len(x) == 2 or x == 'RoW':
+                if len(x) == 2 or x == "RoW":
                     return x
                 else:
-                    return ('ecoinvent', x)
+                    return ("ecoinvent", x)
 
             cg = ConstructiveGeometries()
-            self.topology = {ns(x): set(y) for x, y in cg.data.items()
-                             if x != "__all__"}
-            self['GLO'] = reduce(set.union, self.topology.values())
+            self.topology = {
+                ns(x): set(y) for x, y in cg.data.items() if x != "__all__"
+            }
+            self["GLO"] = reduce(set.union, self.topology.values())
         else:
             self.default_namespace = default_namespace
             self.topology = topology
@@ -64,7 +67,7 @@ class Geomatcher(MutableMapping):
         return key in self.topology
 
     def __getitem__(self, key):
-        if key == 'RoW' and 'RoW' not in self.topology:
+        if key == "RoW" and "RoW" not in self.topology:
             return set()
         return self.topology[self._actual_key(key)]
 
@@ -92,7 +95,7 @@ class Geomatcher(MutableMapping):
             return (self.default_namespace, key)
 
         if isinstance(key, str) and self.coco:
-            new = coco.convert(names=[key], to='ISO2', not_found=None)
+            new = coco.convert(names=[key], to="ISO2", not_found=None)
             if new in self:
                 if new not in self.__seen:
                     self.__seen.add(key)
@@ -113,8 +116,8 @@ class Geomatcher(MutableMapping):
         lst = [x for x, y in lst]
 
         # RoW in both key and lst, but not defined; only RoW remains if exclusive
-        if key == 'RoW' and 'RoW' not in self and exclusive:
-            return ['RoW'] if 'RoW' in lst else []
+        if key == "RoW" and "RoW" not in self and exclusive:
+            return ["RoW"] if "RoW" in lst else []
         elif exclusive:
             removed, remaining = set(), []
             while lst:
@@ -126,12 +129,14 @@ class Geomatcher(MutableMapping):
             lst = remaining
 
         # If RoW not resolved, make it the smallest
-        if 'RoW' not in self and 'RoW' in lst:
-            lst[-1 if biggest_first else 0] = lst.pop(lst.index('RoW'))
+        if "RoW" not in self and "RoW" in lst:
+            lst[-1 if biggest_first else 0] = lst.pop(lst.index("RoW"))
 
         return lst
 
-    def intersects(self, key, include_self=False, exclusive=False, biggest_first=True, only=None):
+    def intersects(
+        self, key, include_self=False, exclusive=False, biggest_first=True, only=None
+    ):
         """Get all locations that intersect this location.
 
         Note that sorting is done by first by number of faces intersecting ``key``; the total number of faces in the intersected region is only used to break sorting ties.
@@ -141,8 +146,8 @@ class Geomatcher(MutableMapping):
         """
         possibles = self.topology if only is None else {k: self[k] for k in only}
 
-        if key == 'RoW' and 'RoW' not in self:
-            return ['RoW'] if 'RoW' in possibles else []
+        if key == "RoW" and "RoW" not in self:
+            return ["RoW"] if "RoW" in possibles else []
 
         faces = self[key]
         lst = [
@@ -152,29 +157,29 @@ class Geomatcher(MutableMapping):
         ]
         return self._finish_filter(lst, key, include_self, exclusive, biggest_first)
 
-    def contained(self, key, include_self=True, exclusive=False, biggest_first=True, only=None):
+    def contained(
+        self, key, include_self=True, exclusive=False, biggest_first=True, only=None
+    ):
         """Get all locations that are completely within this location.
 
         If the ``resolved_row`` context manager is not used, ``RoW`` doesn't have a spatial definition. Therefore, ``.contained("RoW")`` returns a list with either ``RoW`` or nothing.
 
         """
-        if 'RoW' not in self:
-            if key == 'RoW':
-                return ['RoW'] if 'RoW' in (only or []) else []
-            elif only and 'RoW' in only:
-                only.pop(only.index('RoW'))
+        if "RoW" not in self:
+            if key == "RoW":
+                return ["RoW"] if "RoW" in (only or []) else []
+            elif only and "RoW" in only:
+                only.pop(only.index("RoW"))
 
         possibles = self.topology if only is None else {k: self[k] for k in only}
 
         faces = self[key]
-        lst = [
-            (k, len(v))
-            for k, v in possibles.items()
-            if v and faces.issuperset(v)
-        ]
+        lst = [(k, len(v)) for k, v in possibles.items() if v and faces.issuperset(v)]
         return self._finish_filter(lst, key, include_self, exclusive, biggest_first)
 
-    def within(self, key, include_self=True, exclusive=False, biggest_first=True, only=None):
+    def within(
+        self, key, include_self=True, exclusive=False, biggest_first=True, only=None
+    ):
         """Get all locations that completely contain this location.
 
         If the ``resolved_row`` context manager is not used, ``RoW`` doesn't have a spatial definition. Therefore, ``RoW`` can only be contained by ``GLO`` and ``RoW``.
@@ -182,16 +187,12 @@ class Geomatcher(MutableMapping):
         """
         possibles = self.topology if only is None else {k: self[k] for k in only}
         _ = lambda key: [key] if key in possibles else []
-        if 'RoW' not in self and key == 'RoW':
-            answer = [] + _('RoW') + _('GLO')
+        if "RoW" not in self and key == "RoW":
+            answer = [] + _("RoW") + _("GLO")
             return list(reversed(answer)) if biggest_first else answer
 
         faces = self[key]
-        lst = [
-            (k, len(v))
-            for k, v in possibles.items()
-            if faces.issubset(v)
-        ]
+        lst = [(k, len(v)) for k, v in possibles.items() if faces.issubset(v)]
         return self._finish_filter(lst, key, include_self, exclusive, biggest_first)
 
     def split_face(self, face, number=None, ids=None):
@@ -250,10 +251,12 @@ class Geomatcher(MutableMapping):
             self.topology.update({(namespace, k): v for k, v in data.items()})
             self.faces.update(set.union(*data.values()))
         else:
-            self.topology.update({
-                (namespace, k): set.union(*[self[o] for o in v])
-                for k, v in data.items()
-            })
+            self.topology.update(
+                {
+                    (namespace, k): set.union(*[self[o] for o in v])
+                    for k, v in data.items()
+                }
+            )
 
 
 @contextmanager
@@ -263,18 +266,16 @@ def resolved_row(objs, geomatcher):
     Will overwrite any existing ``RoW``.
 
     On exiting the context manager, ``RoW`` is deleted."""
+
     def get_locations(lst):
         for elem in lst:
             try:
-                yield elem['location']
+                yield elem["location"]
             except TypeError:
                 yield elem
 
-    geomatcher['RoW'] = geomatcher.faces.difference(
-        reduce(
-            set.union,
-            [geomatcher[obj] for obj in get_locations(objs)]
-        )
+    geomatcher["RoW"] = geomatcher.faces.difference(
+        reduce(set.union, [geomatcher[obj] for obj in get_locations(objs)])
     )
     yield geomatcher
-    del geomatcher['RoW']
+    del geomatcher["RoW"]

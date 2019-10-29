@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7 (2019-10-29)
+
+* Fix update `fiona` calling syntax
+* Fix `reduce` not a builtin for Python 3
+* Fix implementation bugs in `construct_difference`
+
 ## 0.6.4 (2018-05-31)
 
 Add Washington D.C. to ReliabilityFirst Corporation

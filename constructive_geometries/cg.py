@@ -1,3 +1,4 @@
+from functools import reduce
 from multiprocessing import Pool, cpu_count
 from warnings import warn
 import hashlib
@@ -10,12 +11,15 @@ try:
     from shapely.geometry import shape, mapping
     from shapely.ops import cascaded_union
     import fiona
+
     gis = True
 except ImportError:
     gis = False
 
 
-MISSING_GIS = """Function not available: GIS libraries (fiona and shapely) not installed"""
+MISSING_GIS = (
+    """Function not available: GIS libraries (fiona and shapely) not installed"""
+)
 
 
 @wrapt.decorator
@@ -33,7 +37,7 @@ DATA_FILEPATH = os.path.join(os.path.dirname(__file__), "data")
 def sha256(filepath, blocksize=65536):
     """Generate SHA 256 hash for file at `filepath`"""
     hasher = hashlib.sha256()
-    fo = open(filepath, 'rb')
+    fo = open(filepath, "rb")
     buf = fo.read(blocksize)
     while len(buf) > 0:
         hasher.update(buf)
@@ -43,7 +47,7 @@ def sha256(filepath, blocksize=65536):
 
 @has_gis
 def _to_shapely(data):
-    return shape(data['geometry'])
+    return shape(data["geometry"])
 
 
 @has_gis
@@ -55,10 +59,10 @@ def _to_fiona(data):
 def _union(args):
     label, fp, face_ids = args
     shapes = []
-    with fiona.drivers():
+    with fiona.Env():
         with fiona.open(fp) as src:
             for feat in src:
-                if int(feat['properties']['id']) in face_ids:
+                if int(feat["properties"]["id"]) in face_ids:
                     shapes.append(_to_shapely(feat))
     return label, cascaded_union(shapes)
 
@@ -74,16 +78,16 @@ class ConstructiveGeometries(object):
         """Check that definitions file is present, and that faces file is readable."""
         assert os.path.exists(self.data_fp)
         if gis:
-            with fiona.drivers():
+            with fiona.Env():
                 with fiona.open(self.faces_fp) as src:
                     assert src.meta
 
-        gpkg_hash = json.load(open(self.data_fp))['metadata']['sha256']
+        gpkg_hash = json.load(open(self.data_fp))["metadata"]["sha256"]
         assert gpkg_hash == sha256(self.faces_fp)
 
     def load_definitions(self):
         """Load mapping of country names to face ids"""
-        self.data = dict(json.load(open(self.data_fp))['data'])
+        self.data = dict(json.load(open(self.data_fp))["data"])
         self.all_faces = set(self.data.pop("__all__"))
         self.locations = set(self.data.keys())
 
@@ -120,7 +124,9 @@ class ConstructiveGeometries(object):
         for key in sorted(excluded):
             locations = excluded[key]
             for location in locations:
-                assert location in self.locations, "Can't find location {}".format(location)
+                assert location in self.locations, "Can't find location {}".format(
+                    location
+                )
             included = self.all_faces.difference(
                 {face for loc in locations for face in self.data[loc]}
             )
@@ -162,19 +168,21 @@ class ConstructiveGeometries(object):
 
         """
         metadata = {
-            'filename': 'faces.gpkg',
-            'field': 'id',
-            'sha256': sha256(self.faces_fp)
+            "filename": "faces.gpkg",
+            "field": "id",
+            "sha256": sha256(self.faces_fp),
         }
         data = []
         for key, locations in excluded.items():
             for location in locations:
-                assert location in self.locations, "Can't find location {}".format(location)
+                assert location in self.locations, "Can't find location {}".format(
+                    location
+                )
             included = self.all_faces.difference(
                 {face for loc in locations for face in self.data[loc]}
             )
             data.append((key, sorted(included)))
-        obj = {'data': data, 'metadata': metadata}
+        obj = {"data": data, "metadata": metadata}
         if fp:
             with open(fp, "w") as f:
                 json.dump(obj, f, indent=2)
@@ -192,7 +200,7 @@ class ConstructiveGeometries(object):
         included = set(self.data[parent]).difference(
             reduce(set.union, [set(self.data[loc]) for loc in excluded])
         )
-        geom = _union(included)
+        _, geom = _union((None, self.faces_fp, included))
         if fp:
             self.write_geoms_to_file(fp, [geom], [name] if name else None)
             return fp
@@ -202,22 +210,34 @@ class ConstructiveGeometries(object):
     @has_gis
     def write_geoms_to_file(self, fp, geoms, names=None):
         """Write unioned geometries ``geoms`` to filepath ``fp``. Optionally use ``names`` in name field."""
-        if fp[-5:] != '.gpkg':
-            fp = fp + '.gpkg'
+        if fp[-5:] != ".gpkg":
+            fp = fp + ".gpkg"
         if names is not None:
-            assert len(geoms) == len(names), "Inconsistent length of geometries and names"
+            assert len(geoms) == len(
+                names
+            ), "Inconsistent length of geometries and names"
         else:
             names = ("Merged geometry {}".format(count) for count in itertools.count())
         meta = {
-            'crs': {'no_defs': True, 'ellps': 'WGS84', 'datum': 'WGS84', 'proj': 'longlat'},
-            'driver': 'GPKG',
-            'schema': {'geometry': 'MultiPolygon', 'properties': {'name': 'str', 'id': 'int'}}
+            "crs": {
+                "no_defs": True,
+                "ellps": "WGS84",
+                "datum": "WGS84",
+                "proj": "longlat",
+            },
+            "driver": "GPKG",
+            "schema": {
+                "geometry": "MultiPolygon",
+                "properties": {"name": "str", "id": "int"},
+            },
         }
-        with fiona.drivers():
-            with fiona.open(fp, 'w', **meta) as sink:
+        with fiona.Env():
+            with fiona.open(fp, "w", **meta) as sink:
                 for geom, name, count in zip(geoms, names, itertools.count(1)):
-                    sink.write({
-                        'geometry': _to_fiona(geom),
-                        'properties': {'name': name, 'id': count}
-                    })
+                    sink.write(
+                        {
+                            "geometry": _to_fiona(geom),
+                            "properties": {"name": name, "id": count},
+                        }
+                    )
         return fp
