@@ -17,7 +17,8 @@ setup(
         "wrapt",
     ],
     url="https://github.com/cmutel/constructive_geometries",
-    long_description=open('README.rst', encoding='utf-8').read(),
+    long_description=open('README.md', encoding='utf-8').read(),
+    long_description_content_type="text/markdown",
     description='Simple tools to define world locations from a set of topological faces and set algebra',
     classifiers=[
         'Intended Audience :: Developers',
