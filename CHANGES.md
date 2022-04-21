@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8 (2022-04-21)
+
+Update base data
+
 ## 0.7 (2019-10-29)
 
 * Fix update `fiona` calling syntax
