@@ -11,7 +11,7 @@ import wrapt
 try:
     import fiona
     from shapely.geometry import mapping, shape
-    from shapely.ops import cascaded_union
+    from shapely.ops import unary_union
 
     gis = True
 except ImportError:
@@ -65,7 +65,7 @@ def _union(args):
             for feat in src:
                 if int(feat["properties"]["id"]) in face_ids:
                     shapes.append(_to_shapely(feat))
-    return label, cascaded_union(shapes)
+    return label, unary_union(shapes)
 
 
 class ConstructiveGeometries(object):
