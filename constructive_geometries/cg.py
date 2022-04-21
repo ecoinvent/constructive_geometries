@@ -1,16 +1,17 @@
-from functools import reduce
-from multiprocessing import Pool, cpu_count
-from warnings import warn
 import hashlib
 import itertools
 import json
 import os
+from functools import reduce
+from multiprocessing import Pool, cpu_count
+from warnings import warn
+
 import wrapt
 
 try:
-    from shapely.geometry import shape, mapping
-    from shapely.ops import cascaded_union
     import fiona
+    from shapely.geometry import mapping, shape
+    from shapely.ops import cascaded_union
 
     gis = True
 except ImportError:
