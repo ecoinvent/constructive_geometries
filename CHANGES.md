@@ -1,5 +1,10 @@
 # Changelog
 
+### 0.8.1 (2022-04-21)
+
+* Change code for Puerto Rico from "PR" to "US-PR". Both ISO codes are allowed. Maintains ecoinvent compatibility.
+* Switch from the deprecated `shapely.ops.cascaded_union` to `shapely.ops.unnary_union`.
+
 ## 0.8 (2022-04-21)
 
 Update base data

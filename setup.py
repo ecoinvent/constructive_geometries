@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='constructive_geometries',
-    version="0.8",
+    version="0.8.1",
     packages=["constructive_geometries"],
     package_data={'constructive_geometries': [
         "data/faces.gpkg",
