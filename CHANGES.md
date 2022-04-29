@@ -1,5 +1,9 @@
 # Changelog
 
+### 0.8.2 (2022-04-29)
+
+* Allow either "PR" or "US-PR"
+
 ### 0.8.1 (2022-04-21)
 
 * Change code for Puerto Rico from "PR" to "US-PR". Both ISO codes are allowed. Maintains ecoinvent compatibility.
