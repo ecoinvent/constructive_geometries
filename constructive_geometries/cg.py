@@ -1,3 +1,4 @@
+from typing import Iterable
 import hashlib
 import itertools
 import json
@@ -5,8 +6,11 @@ import os
 from functools import reduce
 from multiprocessing import Pool, cpu_count
 from warnings import warn
+from pathlib import Path
 
 import wrapt
+
+from .compatibility import EMPTY, COMPATIBILITY
 
 try:
     import fiona
@@ -32,10 +36,10 @@ def has_gis(wrapped, instance, args, kwargs):
         warn(MISSING_GIS)
 
 
-DATA_FILEPATH = os.path.join(os.path.dirname(__file__), "data")
+DATA_FILEPATH = Path(__file__).parent.resolve() / "data"
 
 
-def sha256(filepath, blocksize=65536):
+def sha256(filepath: Path, blocksize: int=65536) -> str:
     """Generate SHA 256 hash for file at `filepath`"""
     hasher = hashlib.sha256()
     fo = open(filepath, "rb")
@@ -47,17 +51,17 @@ def sha256(filepath, blocksize=65536):
 
 
 @has_gis
-def _to_shapely(data):
+def _to_shapely(data: dict) -> shape:
     return shape(data["geometry"])
 
 
 @has_gis
-def _to_fiona(data):
+def _to_fiona(data: dict) -> mapping:
     return mapping(data)
 
 
 @has_gis
-def _union(args):
+def _union(args: tuple) -> tuple:
     label, fp, face_ids = args
     shapes = []
     with fiona.Env():
@@ -68,16 +72,18 @@ def _union(args):
     return label, unary_union(shapes)
 
 
-class ConstructiveGeometries(object):
-    def __init__(self):
-        self.data_fp = os.path.join(DATA_FILEPATH, "faces.json")
-        self.faces_fp = os.path.join(DATA_FILEPATH, "faces.gpkg")
+class ConstructiveGeometries:
+    def __init__(self, backwards_compatible: bool = False):
+        self.data_fp = DATA_FILEPATH / "faces.json"
+        self.faces_fp = DATA_FILEPATH / "faces.gpkg"
         self.check_data()
         self.load_definitions()
+        if backwards_compatible:
+            self.add_backward_compatible_definitions()
 
-    def check_data(self):
+    def check_data(self) -> None:
         """Check that definitions file is present, and that faces file is readable."""
-        assert os.path.exists(self.data_fp)
+        assert self.data_fp.is_file()
         if gis:
             with fiona.Env():
                 with fiona.open(self.faces_fp) as src:
@@ -86,13 +92,21 @@ class ConstructiveGeometries(object):
         gpkg_hash = json.load(open(self.data_fp))["metadata"]["sha256"]
         assert gpkg_hash == sha256(self.faces_fp)
 
-    def load_definitions(self):
+    def load_definitions(self) -> None:
         """Load mapping of country names to face ids"""
         self.data = dict(json.load(open(self.data_fp))["data"])
         self.all_faces = set(self.data.pop("__all__"))
         self.locations = set(self.data.keys())
 
-    def construct_rest_of_world(self, excluded, name=None, fp=None, geom=True):
+    def add_backward_compatible_definitions(self) -> None:
+        for key, value in COMPATIBILITY.items():
+            self.data[key] = self.data[value]
+            self.locations.add(key)
+        for key in EMPTY:
+            self.data[key] = []
+            self.locations.add(key)
+
+    def construct_rest_of_world(self, excluded: list[str], name: str=None, fp: Path | None=None, geom: bool=True):
         """Construct rest-of-world geometry and optionally write to filepath ``fp``.
 
         Excludes faces in location list ``excluded``. ``excluded`` must be an iterable of location strings (not face ids)."""
@@ -116,7 +130,7 @@ class ConstructiveGeometries(object):
             return geom
 
     @has_gis
-    def construct_rest_of_worlds(self, excluded, fp=None, use_mp=True, simplify=True):
+    def construct_rest_of_worlds(self, excluded: dict[str, list], fp: Path | None=None, use_mp: bool=True, simplify: bool=True):
         """Construct many rest-of-world geometries and optionally write to filepath ``fp``.
 
         ``excluded`` must be a **dictionary** of {"rest-of-world label": ["names", "of", "excluded", "locations"]}``."""
@@ -147,7 +161,7 @@ class ConstructiveGeometries(object):
         else:
             return geoms
 
-    def construct_rest_of_worlds_mapping(self, excluded, fp=None):
+    def construct_rest_of_worlds_mapping(self, excluded: dict[str, list], fp: Path | None=None):
         """Construct topo mapping file for ``excluded``.
 
         ``excluded`` must be a **dictionary** of {"rest-of-world label": ["names", "of", "excluded", "locations"]}``.
@@ -191,7 +205,7 @@ class ConstructiveGeometries(object):
             return obj
 
     @has_gis
-    def construct_difference(self, parent, excluded, name=None, fp=None):
+    def construct_difference(self, parent: str, excluded: Iterable[str], name: str=None, fp: Path | None=None):
         """Construct geometry from ``parent`` without the regions in ``excluded`` and optionally write to filepath ``fp``.
 
         ``excluded`` must be an iterable of location strings (not face ids)."""
@@ -209,10 +223,10 @@ class ConstructiveGeometries(object):
             return geom
 
     @has_gis
-    def write_geoms_to_file(self, fp, geoms, names=None):
+    def write_geoms_to_file(self, fp: Path, geoms: list, names: list[str] | None=None) -> Path:
         """Write unioned geometries ``geoms`` to filepath ``fp``. Optionally use ``names`` in name field."""
-        if fp[-5:] != ".gpkg":
-            fp = fp + ".gpkg"
+        if fp.suffix.lower() != ".gpkg":
+            fp = fp.parent / (fp.name + ".gpkg")
         if names is not None:
             assert len(geoms) == len(
                 names

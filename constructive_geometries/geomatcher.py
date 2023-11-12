@@ -1,3 +1,4 @@
+from typing import Iterable
 from collections.abc import MutableMapping
 from contextlib import contextmanager
 from functools import reduce
@@ -40,7 +41,7 @@ class Geomatcher(MutableMapping):
 
     __seen = set()
 
-    def __init__(self, topology="ecoinvent", default_namespace=None, use_coco=True):
+    def __init__(self, topology: str="ecoinvent", default_namespace: str | None=None, use_coco: bool=True, backwards_compatible: bool = False):
         self.coco = use_coco
         if topology == "ecoinvent":
             self.default_namespace = "ecoinvent"
@@ -51,7 +52,7 @@ class Geomatcher(MutableMapping):
                 else:
                     return ("ecoinvent", x)
 
-            cg = ConstructiveGeometries()
+            cg = ConstructiveGeometries(backwards_compatible=backwards_compatible)
             self.topology = {
                 ns(x): set(y) for x, y in cg.data.items() if x != "__all__"
             }
@@ -65,28 +66,28 @@ class Geomatcher(MutableMapping):
         else:
             self.faces = reduce(set.union, self.topology.values())
 
-    def __contains__(self, key):
+    def __contains__(self, key: str) -> bool:
         return key in self.topology
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str) -> list:
         if key == "RoW" and "RoW" not in self.topology:
             return set()
         return self.topology[self._actual_key(key)]
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: str, value: list) -> None:
         try:
             key = self._actual_key(key)
         except KeyError:
             pass
         self.topology[key] = value
 
-    def __delitem__(self, key):
+    def __delitem__(self, key) -> None:
         del self.topology[self._actual_key(key)]
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.topology)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterable[str]:
         return iter(self.topology)
 
     def _actual_key(self, key):
