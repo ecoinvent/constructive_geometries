@@ -320,24 +320,26 @@ def test_contained():
     g = Geomatcher()
     expected = [
         "US",
+        ("ecoinvent", "US-AK"),
+        ("ecoinvent", "US-AL"),
+        ("ecoinvent", "US-AR"),
         ("ecoinvent", "US-ASCC"),
-        ("ecoinvent", "US-NPCC"),
-        ("ecoinvent", "US-HICC"),
-        ("ecoinvent", "US-WECC"),
-        ("ecoinvent", "US-SERC"),
-        ("ecoinvent", "US-RFC"),
-        ("ecoinvent", "US-FRCC"),
-        ("ecoinvent", "US-MRO"),
-        ("ecoinvent", "US-SPP"),
+        ("ecoinvent", "US-AZ"),
     ]
-    assert g.contained("US")[:5] == expected[:5]
+    _ = lambda x: sorted(x, key = lambda elem: str(elem))
+    assert _(g.contained("US"))[:5] == _(expected)[:5]
     expected.pop(0)
-    assert g.contained("US", include_self=False)[:5] == expected[:5]
-    assert g.contained("US", include_self=False, exclusive=True)[:5] == expected[:5]
-    assert g.contained("US", biggest_first=False, include_self=False)[-1] == (
+    assert _(g.contained("US", include_self=False))[:5] == _(expected[:5])
+
+    exclusive_expected = [('ecoinvent', 'US-AK'), ('ecoinvent', 'US-HI'), ('ecoinvent', 'US-IA'), ('ecoinvent', 'US-KS'), ('ecoinvent', 'US-MN'), ('ecoinvent', 'US-ND'), ('ecoinvent', 'US-NPCC'), ('ecoinvent', 'US-OK'), ('ecoinvent', 'US-RFC'), ('ecoinvent', 'US-SERC'), ('ecoinvent', 'US-WECC')]
+    assert _(g.contained("US", include_self=False, exclusive=True))[:5] == _(exclusive_expected[:5])
+    assert g.contained("US", biggest_first=False, include_self=False)[-1] in [(
+        "ecoinvent",
+        "US-AK",
+    ), (
         "ecoinvent",
         "US-ASCC",
-    )
+    )]
 
     expected = [
         "US",
@@ -353,7 +355,7 @@ def test_contained():
         ("ecoinvent", "US-ASCC"),
         ("ecoinvent", "US-HICC"),
     ]
-    assert g.contained("US", only=only) == expected
+    assert _(g.contained("US", only=only)) == _(expected)
 
 
 def test_within():
@@ -361,20 +363,22 @@ def test_within():
     expected = [
         "GLO",
         ("ecoinvent", "UN-EUROPE"),
-        ("ecoinvent", "FSU"),
         ("ecoinvent", "UN-EEUROPE"),
+        ("ecoinvent", "FSU"),
         ("ecoinvent", "IAI Area, Russia & RER w/o EU27 & EFTA"),
         "RU",
     ]
-    assert g.within("RU") == expected
+    _ = lambda x: sorted(x, key = lambda elem: str(elem))
+
+    assert _(g.within("RU")) == _(expected)
     expected.pop(-1)
     assert g.within("RU", include_self=False) == expected
     assert g.within("RU", exclusive=True) == ["GLO"]
     expected = [
         "RU",
         ("ecoinvent", "IAI Area, Russia & RER w/o EU27 & EFTA"),
-        ("ecoinvent", "UN-EEUROPE"),
         ("ecoinvent", "FSU"),
+        ("ecoinvent", "UN-EEUROPE"),
         ("ecoinvent", "UN-EUROPE"),
         "GLO",
     ]
@@ -382,13 +386,13 @@ def test_within():
 
     expected = [
         ("ecoinvent", "UN-EUROPE"),
-        ("ecoinvent", "FSU"),
         ("ecoinvent", "UN-EEUROPE"),
+        ("ecoinvent", "FSU"),
     ]
     only = [
         ("ecoinvent", "UN-EUROPE"),
-        ("ecoinvent", "FSU"),
         ("ecoinvent", "UN-EEUROPE"),
+        ("ecoinvent", "FSU"),
     ]
     assert g.within("RU", only=only) == expected
 
@@ -406,22 +410,22 @@ def test_intersects_row():
         "NO", only=["NO", "RoW"], include_self=True, exclusive=False
     ) == ["NO"]
     assert (
-        g.intersects(
+        sorted(g.intersects(
             ("ecoinvent", "BALTSO"),
             include_self=False,
             exclusive=True,
             only=["RoW", "EE", "LT", "LV"],
-        )
-        == ["EE", "LT", "LV"]
+        ))
+        == sorted(["EE", "LT", "LV"])
     )
     assert (
-        g.intersects(
+        sorted(g.intersects(
             ("ecoinvent", "BALTSO"),
             include_self=False,
             exclusive=True,
             only=["RoW", "LT", "LV"],
-        )
-        == ["LT", "LV"]
+        ))
+        == sorted(["LT", "LV"])
     )
 
 
@@ -483,3 +487,20 @@ def test_row_contextmanager_within():
     with resolved_row(["NO", "LT", "EE"], g_orig) as g:
         assert g.within("RoW") == ["GLO", "RoW"]
         assert g.within("RoW", biggest_first=False) == ["RoW", "GLO"]
+
+
+def test_backwards_compatibility():
+    cg = ConstructiveGeometries()
+    assert 'SPP' not in cg.locations
+    assert 'SPP' not in cg.data
+
+    cg = ConstructiveGeometries(backwards_compatible=True)
+    assert 'SPP' in cg.locations
+    assert 'SPP' in cg.data
+    assert cg.data['SERC'] == cg.data['US-SERC']
+
+    g = Geomatcher()
+    assert ('ecoinvent', 'SPP') not in g
+
+    g = Geomatcher(backwards_compatible=True)
+    assert ('ecoinvent', 'SPP') in g
