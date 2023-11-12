@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.9 (2023-11-12)
+
+* Compatiblity with ecoinvent 3.10
+* Packaging switch to `pyproject.toml`
+* Add `backwards_compatible` argument to include deprecated locations
+* [#7 bugfix in `construct_rest_of_world`](https://github.com/ecoinvent/constructive_geometries/pull/7)
+* [#4 Display key as part of error message](https://github.com/ecoinvent/constructive_geometries/pull/4)
+
 ### 0.8.2 (2022-04-29)
 
 * Allow either "PR" or "US-PR"
