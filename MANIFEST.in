@@ -3,4 +3,5 @@ include *.md
 include README.rst
 include requirements.txt
 include constructive_geometries/*.py
-include constructive_geometries/data/*.*
+include constructive_geometries/data/*.gpkg
+include constructive_geometries/data/*.json
