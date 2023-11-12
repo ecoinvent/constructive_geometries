@@ -105,7 +105,7 @@ class Geomatcher(MutableMapping):
                     print("Geomatcher: Used '{}' for '{}'".format(new, key))
                 return new
 
-        raise KeyError("Can't find this location")
+        raise KeyError("Can't find location: {}.".format(key))
 
     def _finish_filter(self, lst, key, include_self, exclusive, biggest_first):
         """Finish filtering a GIS operation. Can optionally exclude the input key, sort results, and exclude overlapping results. Internal function, not normally called directly."""

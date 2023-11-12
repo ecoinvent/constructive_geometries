@@ -122,7 +122,7 @@ class ConstructiveGeometries:
             warn(MISSING_GIS)
             return
 
-        geom = _union(included)[1]
+        geom = _union(None, self.faces_fp, included)[1]
         if fp:
             self.write_geoms_to_file(fp, [geom], [name] if name else None)
             return fp
