@@ -22,6 +22,9 @@ try:
 except ImportError:
     gis = False
 
+    class Geometry:
+        pass
+
 
 MISSING_GIS = (
     """Function not available: GIS libraries (fiona and shapely) not installed"""
