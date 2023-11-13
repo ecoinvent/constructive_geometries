@@ -1,22 +1,22 @@
-from typing import Iterable
 import hashlib
 import itertools
 import json
 import os
 from functools import reduce
 from multiprocessing import Pool, cpu_count
-from warnings import warn
 from pathlib import Path
+from typing import Iterable
+from warnings import warn
 
 import wrapt
 
-from .compatibility import EMPTY, COMPATIBILITY
+from .compatibility import COMPATIBILITY, EMPTY
 
 try:
     import fiona
+    from shapely import Geometry
     from shapely.geometry import mapping, shape
     from shapely.ops import unary_union
-    from shapely import Geometry
 
     gis = True
 except ImportError:
@@ -40,7 +40,7 @@ def has_gis(wrapped, instance, args, kwargs):
 DATA_FILEPATH = Path(__file__).parent.resolve() / "data"
 
 
-def sha256(filepath: Path, blocksize: int=65536) -> str:
+def sha256(filepath: Path, blocksize: int = 65536) -> str:
     """Generate SHA 256 hash for file at `filepath`"""
     hasher = hashlib.sha256()
     fo = open(filepath, "rb")
@@ -107,10 +107,17 @@ class ConstructiveGeometries:
             self.data[key] = []
             self.locations.add(key)
 
-    def construct_rest_of_world(self, excluded: list[str], name: str=None, fp: Path | None=None, geom: bool=True) -> Path | Geometry:
+    def construct_rest_of_world(
+        self,
+        excluded: list[str],
+        name: str = None,
+        fp: Path | None = None,
+        geom: bool = True,
+    ) -> Path | Geometry:
         """Construct rest-of-world geometry and optionally write to filepath ``fp``.
 
-        Excludes faces in location list ``excluded``. ``excluded`` must be an iterable of location strings (not face ids)."""
+        Excludes faces in location list ``excluded``. ``excluded`` must be an iterable of location strings (not face ids).
+        """
         for location in excluded:
             assert location in self.locations, "Can't find location {}".format(location)
         included = self.all_faces.difference(
@@ -131,10 +138,17 @@ class ConstructiveGeometries:
             return geom
 
     @has_gis
-    def construct_rest_of_worlds(self, excluded: dict[str, list], fp: Path | None=None, use_mp: bool=True, simplify: bool=True) -> Path | Geometry:
+    def construct_rest_of_worlds(
+        self,
+        excluded: dict[str, list],
+        fp: Path | None = None,
+        use_mp: bool = True,
+        simplify: bool = True,
+    ) -> Path | Geometry:
         """Construct many rest-of-world geometries and optionally write to filepath ``fp``.
 
-        ``excluded`` must be a **dictionary** of {"rest-of-world label": ["names", "of", "excluded", "locations"]}``."""
+        ``excluded`` must be a **dictionary** of {"rest-of-world label": ["names", "of", "excluded", "locations"]}``.
+        """
         geoms = {}
         raw_data = []
         for key in sorted(excluded):
@@ -162,7 +176,9 @@ class ConstructiveGeometries:
         else:
             return geoms
 
-    def construct_rest_of_worlds_mapping(self, excluded: dict[str, list], fp: Path | None=None) -> None | dict:
+    def construct_rest_of_worlds_mapping(
+        self, excluded: dict[str, list], fp: Path | None = None
+    ) -> None | dict:
         """Construct topo mapping file for ``excluded``.
 
         ``excluded`` must be a **dictionary** of {"rest-of-world label": ["names", "of", "excluded", "locations"]}``.
@@ -206,7 +222,13 @@ class ConstructiveGeometries:
             return obj
 
     @has_gis
-    def construct_difference(self, parent: str, excluded: Iterable[str], name: str=None, fp: Path | None=None) -> Path | Geometry:
+    def construct_difference(
+        self,
+        parent: str,
+        excluded: Iterable[str],
+        name: str = None,
+        fp: Path | None = None,
+    ) -> Path | Geometry:
         """Construct geometry from ``parent`` without the regions in ``excluded`` and optionally write to filepath ``fp``.
 
         ``excluded`` must be an iterable of location strings (not face ids)."""
@@ -224,7 +246,9 @@ class ConstructiveGeometries:
             return geom
 
     @has_gis
-    def write_geoms_to_file(self, fp: Path, geoms: list, names: list[str] | None=None) -> Path:
+    def write_geoms_to_file(
+        self, fp: Path, geoms: list, names: list[str] | None = None
+    ) -> Path:
         """Write unioned geometries ``geoms`` to filepath ``fp``. Optionally use ``names`` in name field."""
         if fp.suffix.lower() != ".gpkg":
             fp = fp.parent / (fp.name + ".gpkg")

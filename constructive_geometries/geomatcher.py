@@ -1,7 +1,7 @@
-from typing import Iterable
 from collections.abc import MutableMapping
 from contextlib import contextmanager
 from functools import reduce
+from typing import Iterable
 
 import country_converter as coco
 
@@ -41,7 +41,13 @@ class Geomatcher(MutableMapping):
 
     __seen = set()
 
-    def __init__(self, topology: str="ecoinvent", default_namespace: str | None=None, use_coco: bool=True, backwards_compatible: bool = False):
+    def __init__(
+        self,
+        topology: str = "ecoinvent",
+        default_namespace: str | None = None,
+        use_coco: bool = True,
+        backwards_compatible: bool = False,
+    ):
         self.coco = use_coco
         if topology == "ecoinvent":
             self.default_namespace = "ecoinvent"
@@ -107,7 +113,14 @@ class Geomatcher(MutableMapping):
 
         raise KeyError("Can't find location: {}.".format(key))
 
-    def _finish_filter(self, lst: list, key: str | tuple, include_self: bool, exclusive: bool, biggest_first: bool) -> list:
+    def _finish_filter(
+        self,
+        lst: list,
+        key: str | tuple,
+        include_self: bool,
+        exclusive: bool,
+        biggest_first: bool,
+    ) -> list:
         """Finish filtering a GIS operation. Can optionally exclude the input key, sort results, and exclude overlapping results. Internal function, not normally called directly."""
         key = self._actual_key(key)
         locations = [x[0] for x in lst]
@@ -138,7 +151,12 @@ class Geomatcher(MutableMapping):
         return lst
 
     def intersects(
-        self, key: str | tuple, include_self: bool=False, exclusive: bool=False, biggest_first: bool=True, only: Iterable | None =None
+        self,
+        key: str | tuple,
+        include_self: bool = False,
+        exclusive: bool = False,
+        biggest_first: bool = True,
+        only: Iterable | None = None,
     ) -> list:
         """Get all locations that intersect this location.
 
@@ -161,7 +179,12 @@ class Geomatcher(MutableMapping):
         return self._finish_filter(lst, key, include_self, exclusive, biggest_first)
 
     def contained(
-        self, key: str | tuple, include_self: bool=True, exclusive: bool=False, biggest_first: bool=True, only: Iterable | None=None
+        self,
+        key: str | tuple,
+        include_self: bool = True,
+        exclusive: bool = False,
+        biggest_first: bool = True,
+        only: Iterable | None = None,
     ) -> list:
         """Get all locations that are completely within this location.
 
@@ -181,7 +204,12 @@ class Geomatcher(MutableMapping):
         return self._finish_filter(lst, key, include_self, exclusive, biggest_first)
 
     def within(
-        self, key: str | tuple, include_self: bool=True, exclusive: bool=False, biggest_first: bool=True, only: Iterable | None=None
+        self,
+        key: str | tuple,
+        include_self: bool = True,
+        exclusive: bool = False,
+        biggest_first: bool = True,
+        only: Iterable | None = None,
     ) -> list:
         """Get all locations that completely contain this location.
 
@@ -198,7 +226,9 @@ class Geomatcher(MutableMapping):
         lst = [(k, len(v)) for k, v in possibles.items() if faces.issubset(v)]
         return self._finish_filter(lst, key, include_self, exclusive, biggest_first)
 
-    def split_face(self, face: int, number: int | None=None, ids: list[int] | None=None) -> list[int]:
+    def split_face(
+        self, face: int, number: int | None = None, ids: list[int] | None = None
+    ) -> list[int]:
         """Split a topological face into a number of small faces.
 
         * ``face``: The face to split. Must be in the topology.
@@ -226,7 +256,9 @@ class Geomatcher(MutableMapping):
 
         return ids
 
-    def add_definitions(self, data: dict, namespace: str, relative: bool=True) -> None:
+    def add_definitions(
+        self, data: dict, namespace: str, relative: bool = True
+    ) -> None:
         """Add new topological definitions to ``self.topology``.
 
         If ``relative`` is true, then ``data`` is defined relative to the existing locations already in ``self.topology``, e.g. IMAGE:
