@@ -1,6 +1,10 @@
 # Changelog
 
-## 0.9 (2023-11-13)
+## 0.9.2 (2023-11-13)
+
+* Add areas of faces
+
+## 0.9.1 (2023-11-13)
 
 * Complete adding type annotations
 
