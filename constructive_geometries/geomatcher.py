@@ -90,7 +90,7 @@ class Geomatcher(MutableMapping):
     def __iter__(self) -> Iterable[str]:
         return iter(self.topology)
 
-    def _actual_key(self, key):
+    def _actual_key(self, key: str | tuple) -> str | tuple:
         """Translate provided key into the key used in the topology. Tries the unmodified key, the key with the default namespace, and the country converter. Raises a ``KeyError`` if none of these finds a suitable definition in ``self.topology``."""
         if key in self or key in ("RoW", "GLO"):
             return key
@@ -107,7 +107,7 @@ class Geomatcher(MutableMapping):
 
         raise KeyError("Can't find location: {}.".format(key))
 
-    def _finish_filter(self, lst, key, include_self, exclusive, biggest_first):
+    def _finish_filter(self, lst: list, key: str | tuple, include_self: bool, exclusive: bool, biggest_first: bool) -> list:
         """Finish filtering a GIS operation. Can optionally exclude the input key, sort results, and exclude overlapping results. Internal function, not normally called directly."""
         key = self._actual_key(key)
         locations = [x[0] for x in lst]
@@ -138,8 +138,8 @@ class Geomatcher(MutableMapping):
         return lst
 
     def intersects(
-        self, key, include_self=False, exclusive=False, biggest_first=True, only=None
-    ):
+        self, key: str | tuple, include_self: bool=False, exclusive: bool=False, biggest_first: bool=True, only: Iterable | None =None
+    ) -> list:
         """Get all locations that intersect this location.
 
         Note that sorting is done by first by number of faces intersecting ``key``; the total number of faces in the intersected region is only used to break sorting ties.
@@ -161,8 +161,8 @@ class Geomatcher(MutableMapping):
         return self._finish_filter(lst, key, include_self, exclusive, biggest_first)
 
     def contained(
-        self, key, include_self=True, exclusive=False, biggest_first=True, only=None
-    ):
+        self, key: str | tuple, include_self: bool=True, exclusive: bool=False, biggest_first: bool=True, only: Iterable | None=None
+    ) -> list:
         """Get all locations that are completely within this location.
 
         If the ``resolved_row`` context manager is not used, ``RoW`` doesn't have a spatial definition. Therefore, ``.contained("RoW")`` returns a list with either ``RoW`` or nothing.
@@ -181,8 +181,8 @@ class Geomatcher(MutableMapping):
         return self._finish_filter(lst, key, include_self, exclusive, biggest_first)
 
     def within(
-        self, key, include_self=True, exclusive=False, biggest_first=True, only=None
-    ):
+        self, key: str | tuple, include_self: bool=True, exclusive: bool=False, biggest_first: bool=True, only: Iterable | None=None
+    ) -> list:
         """Get all locations that completely contain this location.
 
         If the ``resolved_row`` context manager is not used, ``RoW`` doesn't have a spatial definition. Therefore, ``RoW`` can only be contained by ``GLO`` and ``RoW``.
@@ -198,7 +198,7 @@ class Geomatcher(MutableMapping):
         lst = [(k, len(v)) for k, v in possibles.items() if faces.issubset(v)]
         return self._finish_filter(lst, key, include_self, exclusive, biggest_first)
 
-    def split_face(self, face, number=None, ids=None):
+    def split_face(self, face: int, number: int | None=None, ids: list[int] | None=None) -> list[int]:
         """Split a topological face into a number of small faces.
 
         * ``face``: The face to split. Must be in the topology.
@@ -226,7 +226,7 @@ class Geomatcher(MutableMapping):
 
         return ids
 
-    def add_definitions(self, data, namespace, relative=True):
+    def add_definitions(self, data: dict, namespace: str, relative: bool=True) -> None:
         """Add new topological definitions to ``self.topology``.
 
         If ``relative`` is true, then ``data`` is defined relative to the existing locations already in ``self.topology``, e.g. IMAGE:

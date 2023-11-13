@@ -16,6 +16,7 @@ try:
     import fiona
     from shapely.geometry import mapping, shape
     from shapely.ops import unary_union
+    from shapely import Geometry
 
     gis = True
 except ImportError:
@@ -51,17 +52,17 @@ def sha256(filepath: Path, blocksize: int=65536) -> str:
 
 
 @has_gis
-def _to_shapely(data: dict) -> shape:
+def _to_shapely(data: dict) -> Geometry:
     return shape(data["geometry"])
 
 
 @has_gis
-def _to_fiona(data: dict) -> mapping:
+def _to_fiona(data: Geometry) -> dict:
     return mapping(data)
 
 
 @has_gis
-def _union(args: tuple) -> tuple:
+def _union(args: tuple[str, Path, list[int]]) -> tuple[str, Geometry]:
     label, fp, face_ids = args
     shapes = []
     with fiona.Env():
@@ -106,7 +107,7 @@ class ConstructiveGeometries:
             self.data[key] = []
             self.locations.add(key)
 
-    def construct_rest_of_world(self, excluded: list[str], name: str=None, fp: Path | None=None, geom: bool=True):
+    def construct_rest_of_world(self, excluded: list[str], name: str=None, fp: Path | None=None, geom: bool=True) -> Path | Geometry:
         """Construct rest-of-world geometry and optionally write to filepath ``fp``.
 
         Excludes faces in location list ``excluded``. ``excluded`` must be an iterable of location strings (not face ids)."""
@@ -130,7 +131,7 @@ class ConstructiveGeometries:
             return geom
 
     @has_gis
-    def construct_rest_of_worlds(self, excluded: dict[str, list], fp: Path | None=None, use_mp: bool=True, simplify: bool=True):
+    def construct_rest_of_worlds(self, excluded: dict[str, list], fp: Path | None=None, use_mp: bool=True, simplify: bool=True) -> Path | Geometry:
         """Construct many rest-of-world geometries and optionally write to filepath ``fp``.
 
         ``excluded`` must be a **dictionary** of {"rest-of-world label": ["names", "of", "excluded", "locations"]}``."""
@@ -161,7 +162,7 @@ class ConstructiveGeometries:
         else:
             return geoms
 
-    def construct_rest_of_worlds_mapping(self, excluded: dict[str, list], fp: Path | None=None):
+    def construct_rest_of_worlds_mapping(self, excluded: dict[str, list], fp: Path | None=None) -> None | dict:
         """Construct topo mapping file for ``excluded``.
 
         ``excluded`` must be a **dictionary** of {"rest-of-world label": ["names", "of", "excluded", "locations"]}``.
@@ -205,7 +206,7 @@ class ConstructiveGeometries:
             return obj
 
     @has_gis
-    def construct_difference(self, parent: str, excluded: Iterable[str], name: str=None, fp: Path | None=None):
+    def construct_difference(self, parent: str, excluded: Iterable[str], name: str=None, fp: Path | None=None) -> Path | Geometry:
         """Construct geometry from ``parent`` without the regions in ``excluded`` and optionally write to filepath ``fp``.
 
         ``excluded`` must be an iterable of location strings (not face ids)."""
