@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9 (2023-11-13)
+
+* Complete adding type annotations
+
 ## 0.9 (2023-11-12)
 
 * Compatiblity with ecoinvent 3.10
