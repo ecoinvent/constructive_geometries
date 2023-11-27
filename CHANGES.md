@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.3 (2023-11-27)
+
+* Compatiblity with ecoinvent 3.10 final
+
 ## 0.9.2 (2023-11-13)
 
 * Add areas of faces
