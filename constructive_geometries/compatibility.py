@@ -13,6 +13,7 @@ COMPATIBILITY = {
     "AUS-VCT": "AU-VIC",
     "AUS-WAS": "AU-WA",
     "Europe, without Russia and Turkey": "Europe, without Russia and Türkiye",
+    "Europe, without Russia and Türkiye": "Europe, without Russia and Turkey",
     "US-PR": "PR",
     "ASCC": "US-ASCC",
     "CSG": "CN-CSG",
