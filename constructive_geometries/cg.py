@@ -93,12 +93,12 @@ class ConstructiveGeometries:
                 with fiona.open(self.faces_fp) as src:
                     assert src.meta
 
-        gpkg_hash = json.load(open(self.data_fp))["metadata"]["sha256"]
+        gpkg_hash = json.load(open(self.data_fp, encoding="utf-8"))["metadata"]["sha256"]
         assert gpkg_hash == sha256(self.faces_fp)
 
     def load_definitions(self) -> None:
         """Load mapping of country names to face ids"""
-        self.data = dict(json.load(open(self.data_fp))["data"])
+        self.data = dict(json.load(open(self.data_fp, encoding="utf-8"))["data"])
         self.all_faces = set(self.data.pop("__all__"))
         self.locations = set(self.data.keys())
 
@@ -219,7 +219,7 @@ class ConstructiveGeometries:
             data.append((key, sorted(included)))
         obj = {"data": data, "metadata": metadata}
         if fp:
-            with open(fp, "w") as f:
+            with open(fp, "w", encoding="utf-8") as f:
                 json.dump(obj, f, indent=2)
         else:
             return obj
