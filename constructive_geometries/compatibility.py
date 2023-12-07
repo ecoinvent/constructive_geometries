@@ -1,5 +1,6 @@
 EMPTY = {"FRCC", "IN-DD", "IN-DN", "US-FRCC", "US-SPP", "SPP", "EEU"}
 COMPATIBILITY = {
+    # Old name: Name in the data files
     "AUS-AC": "AU-AC",
     "Ashmore and Cartier Islands": "AU-AC",
     "AUS-ACT": "AU-ACT",
