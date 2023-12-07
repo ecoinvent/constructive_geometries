@@ -1,5 +1,6 @@
 EMPTY = {"FRCC", "IN-DD", "IN-DN", "US-FRCC", "US-SPP", "SPP", "EEU"}
 COMPATIBILITY = {
+    # Old name: Name in the data files
     "AUS-AC": "AU-AC",
     "Ashmore and Cartier Islands": "AU-AC",
     "AUS-ACT": "AU-ACT",
@@ -25,19 +26,4 @@ COMPATIBILITY = {
     "WECC, US only": "US-WECC",
     "SGCC": "CN-SGCC",
     "IAI Area, West Europe": "IAI Area, EU27 & EFTA",
-    "Aluminium producing area, EU27 and EFTA countries": "IAI Area, EU27 & EFTA",
-    "Aluminium producing area, Europe outside EU27 and EFTA": "IAI Area, Russia & Europe outside EU27 & EFTA",
-    "IAI producing Area 2, North America": "IAI Area, North America",
-    "IAI producing Area 1, Africa": "IAI Area, Africa",
-    "IAI producing Area 2, North America, without Quebec": "IAI Area, North America, without Quebec",
-    "IAI producing Area 3, South America": "IAI Area, South America",
-    "IAI producing Area 4 and 5, South and East Asia, without China": "IAI Area, Asia, without China and GCC",
-    "IAI producing Area 8, Gulf Region": "IAI Area, Gulf Cooperation Council",
-    "French Southern Territories": "French Southern and Antarctic Lands",
-    "Hong Kong": "Hong Kong S.A.R.",
-    "Macau": "Macao S.A.R.",
-    "Macao": "Macao S.A.R.",
-    "Bonaire, Sint Eustatius and Saba": "Bonaire, Saint Eustatius and Saba",
-    "Timor-Leste": "East Timor",
-    "Cote d'Ivoire": "Ivory Coast",
 }
