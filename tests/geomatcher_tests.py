@@ -503,10 +503,20 @@ def test_backwards_compatibility():
     assert "SPP" not in cg.locations
     assert "SPP" not in cg.data
 
+    assert "Europe, without Russia and Turkey" not in cg.locations
+    assert "Europe, without Russia and Turkey" not in cg.data
+    assert "Europe, without Russia and Türkiye" in cg.locations
+    assert "Europe, without Russia and Türkiye" in cg.data
+
     cg = ConstructiveGeometries(backwards_compatible=True)
     assert "SPP" in cg.locations
     assert "SPP" in cg.data
     assert cg.data["SERC"] == cg.data["US-SERC"]
+
+    assert "Europe, without Russia and Turkey" in cg.locations
+    assert "Europe, without Russia and Turkey" in cg.data
+    assert "Europe, without Russia and Türkiye" in cg.locations
+    assert "Europe, without Russia and Türkiye" in cg.data
 
     g = Geomatcher()
     assert ("ecoinvent", "SPP") not in g
