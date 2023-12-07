@@ -52,7 +52,7 @@ jobs:
       # install testing
       - name: Install package and test deps
         run: |
-          pip install .[testing] # install the package and the testing deps
+          pip install .[dev] # install the package and the development deps
 
       - name: Test with pytest
         run: |
