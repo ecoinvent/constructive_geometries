@@ -25,6 +25,7 @@ dependencies = [
     "country_converter",
     "wrapt"
 ]
+readme = "README.md"
 
 [project.urls]
 source = "https://github.com/ecoinvent/constructive_geometries"
