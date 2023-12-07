@@ -1,4 +1,10 @@
-__version__ = "0.9.3"
+__all__ = (
+    "ConstructiveGeometries",
+    "Geomatcher",
+    "resolved_row",
+)
+
+__version__ = "0.9.4"
 
 
 from .cg import ConstructiveGeometries

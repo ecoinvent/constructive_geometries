@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.4 (2023-11-27)
+
+* Fix broken release 0.9.3
+
 ## 0.9.3 (2023-11-27)
 
 * Compatiblity with ecoinvent 3.10 final
